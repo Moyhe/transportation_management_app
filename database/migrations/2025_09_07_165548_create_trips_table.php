@@ -2,7 +2,7 @@
 
 use App\Models\Company;
 use App\Models\Driver;
-use App\Models\vehicle;
+use App\Models\Vehicle;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

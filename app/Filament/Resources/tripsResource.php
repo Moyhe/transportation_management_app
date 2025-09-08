@@ -153,4 +153,5 @@ class tripsResource extends Resource
     {
         return 'The number of Active trips';
     }
+
 }

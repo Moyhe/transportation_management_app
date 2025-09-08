@@ -10,11 +10,6 @@ class Trip extends Model
 {
     use HasFactory;
 
-    public function company(): BelongsTo
-    {
-        return $this->belongsTo(Company::class);
-    }
-
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);
@@ -24,4 +19,20 @@ class Trip extends Model
     {
         return $this->belongsTo(Driver::class);
     }
+
+
+    public function company(): BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+
+    protected function casts(): array
+    {
+        return [
+            'start_time' => 'datetime',
+            'end_time' => 'datetime',
+        ];
+    }
+
 }

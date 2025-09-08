@@ -10,6 +10,7 @@ class ListTrips extends ListRecords
 {
     protected static string $resource = tripsResource::class;
 
+
     protected function getHeaderActions(): array
     {
         return [

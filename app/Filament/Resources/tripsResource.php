@@ -17,6 +17,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class tripsResource extends Resource
@@ -154,4 +155,9 @@ class tripsResource extends Resource
         return 'The number of Active trips';
     }
 
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['company', 'driver', 'vehicle']);
+    }
 }

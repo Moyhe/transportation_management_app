@@ -8,6 +8,7 @@ use App\Models\Vehicle;
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class Statistics extends StatsOverviewWidget
 {
@@ -15,25 +16,33 @@ class Statistics extends StatsOverviewWidget
 
     protected function getStats(): array
     {
-        $activeTrips = Trip::where('start_time', '<=', now())
-            ->where('end_time', '>=', now())
-            ->count();
+        $activeTrips = Cache::Remember('active_trips_count', now()->addMinutes(5), function () {
+            return Trip::where('start_time', '<=', now())
+                ->where('end_time', '>=', now())
+                ->count();
+        });
 
-        $completedTrips = Trip::whereMonth('end_time', Carbon::now()->month)
-            ->whereYear('end_time', Carbon::now()->year)
-            ->count();
+        $completedTrips = Cache::Remember('completed_trips_count', now()->addMinutes(5), function () {
+            return Trip::whereMonth('end_time', Carbon::now()->month)
+                ->whereYear('end_time', Carbon::now()->year)
+                ->count();
+        });
 
-        $busyDriverIds = Trip::where('start_time', '<=', now())
-            ->where('end_time', '>=', now())
-            ->pluck('driver_id');
+        $availableDrivers = Cache::remember('available_drivers_count', now()->addMinutes(5), function () {
+            $busyDriverIds = Trip::where('start_time', '<=', now())
+                ->where('end_time', '>=', now())
+                ->pluck('driver_id');
 
-        $availableDrivers = Driver::whereNotIn('id', $busyDriverIds)->count();
+            return Driver::whereNotIn('id', $busyDriverIds)->count();
+        });
 
-        $busyVehicleIds = Trip::where('start_time', '<=', now())
-            ->where('end_time', '>=', now())
-            ->pluck('vehicle_id');
+        $availableVehicles = Cache::remember('available_vehicles_count', now()->addMinutes(5), function () {
+            $busyVehicleIds = Trip::where('start_time', '<=', now())
+                ->where('end_time', '>=', now())
+                ->pluck('vehicle_id');
 
-        $availableVehicles = Vehicle::whereNotIn('id', $busyVehicleIds)->count();
+            return Vehicle::whereNotIn('id', $busyVehicleIds)->count();
+        });
 
         return [
             Stat::make('Active Trips', $activeTrips)
@@ -49,7 +58,7 @@ class Statistics extends StatsOverviewWidget
                 ->color('info'),
 
             Stat::make('Completed Trips This Month', $completedTrips)
-                ->description('Trips finished in ' . now()->format('F'))
+                ->description('Trips finished in '.now()->format('F'))
                 ->color('primary'),
         ];
     }

@@ -19,6 +19,7 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class driversResource extends Resource
@@ -128,5 +129,10 @@ class driversResource extends Resource
     public static function getNavigationBadgeTooltip(): ?string
     {
         return 'The number of available Drivers';
+    }
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('company', 'trips');
     }
 }

@@ -15,6 +15,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 class CompanyResource extends Resource
@@ -100,5 +101,11 @@ class CompanyResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return [];
+    }
+
+
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with('drivers', 'vehicles', 'trips');
     }
 }

@@ -5,7 +5,7 @@ namespace App\Filament\Resources\driversResource\Pages;
 use App\Filament\Resources\driversResource;
 use Filament\Resources\Pages\CreateRecord;
 
-class Createdrivers extends CreateRecord
+class CreateDrivers extends CreateRecord
 {
     protected static string $resource = driversResource::class;
 

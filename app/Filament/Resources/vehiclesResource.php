@@ -25,7 +25,7 @@ class vehiclesResource extends Resource
 
     protected static ?string $slug = 'vehicles';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|null|BackedEnum $navigationIcon = 'heroicon-o-truck';
 
     public static function form(Schema $schema): Schema
     {

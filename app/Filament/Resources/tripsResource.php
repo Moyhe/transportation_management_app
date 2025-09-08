@@ -24,7 +24,7 @@ class tripsResource extends Resource
 
     protected static ?string $slug = 'trips';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|null|BackedEnum $navigationIcon = 'heroicon-o-map';
 
     public static function form(Schema $schema): Schema
     {

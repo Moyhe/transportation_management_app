@@ -24,7 +24,7 @@ class driversResource extends Resource
 
     protected static ?string $slug = 'drivers';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|null|BackedEnum $navigationIcon = 'heroicon-o-user-group';
 
     public static function form(Schema $schema): Schema
     {
@@ -95,7 +95,7 @@ class driversResource extends Resource
     {
         return [
             'index' => Pages\Listdrivers::route('/'),
-            'create' => Pages\Createdrivers::route('/create'),
+            'create' => Pages\CreateDrivers::route('/create'),
             'edit' => Pages\Editdrivers::route('/{record}/edit'),
         ];
     }

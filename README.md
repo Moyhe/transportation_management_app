@@ -41,6 +41,16 @@ this app built with laravel 12, filament v4, pest v3, tailwindcss v4
     ```bash
     composer run dev
 
+9. create filament user using
+
+    ```bash
+    php artisan make:filament-user
+
+10. Access the application in your web browser at with filament admin panel credentials
+
+    ```bash
+    http://127.0.0.1:8000/admin/login
+
 ## Key Design Decisions
 
 ### Overlapping Trip Validation

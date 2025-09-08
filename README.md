@@ -1,61 +1,123 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+## Transportation Management System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+this app built with laravel 12, filament v4, pest v3, tailwindcss v4
 
-## About Laravel
+### Installation
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+1. Clone the repository:
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+    ```bash
+    git clone git@github.com:Moyhe/transportation_management_app.git
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+2. Navigate into project folder using terminal and run
 
-## Learning Laravel
+    ```bash
+    composer install && npm install    
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+3. Copy .env.example into .env
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+    ```bash
+   cp .env.example .env
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+4. Adjust DataBase parameters
+   If you want to use Mysql, make sure you have mysql server up and running.
 
-## Laravel Sponsors
+5. Set encryption key
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+    ```bash
+    php artisan key:generate
 
-### Premium Partners
+6. Run migrations and seed the database
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+    ```bash
+    php artisan migrate --seed
 
-## Contributing
+7. run test
+    ```bash
+    php artisan test
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+8. start the development server
 
-## Code of Conduct
+    ```bash
+    composer run dev
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Key Design Decisions
 
-## Security Vulnerabilities
+### Overlapping Trip Validation
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+A trip is considered active if:
 
-## License
+    start_time <= now AND end_time >= now
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+This ensures that:
+
+1- A driver cannot be assigned to two active trips at the same time.
+
+2- A vehicle cannot be used in two active trips simultaneously.
+
+3- When creating or editing a trip, the system checks for time conflicts before saving.
+
+### Query Optimization
+
+To improve performance:
+
+    Eager loading (with(['company', 'driver', 'vehicle'])) is used throughout resources to avoid N+1 query issues.
+
+Caching is applied to KPI widgets (active trips, available drivers, available vehicles, completed trips this month) with
+a 5-minute TTL. This reduces database load and speeds up dashboard rendering.
+
+### Assumptions
+
+1- Each trip belongs to exactly one driver, one vehicle, and one company.
+
+2- A driver cannot be in more than one active trip at the same time.
+
+3- A vehicle cannot be in more than one active trip at the same time.
+
+4- "Available drivers/vehicles" means those not currently assigned to an active trip.
+
+5- Trips are assumed to last anywhere from 30 minutes to 8 hours.
+
+6- KPI calculations are refreshed every 5 minutes via caching
+
+### Testing
+
+We focused on covering the business logic of the system: resource management, validation, and overlapping trip checks.
+
+#### What is tested
+
+#### Company Resource
+
+1- Creating and editing companies
+
+2- Validation rules (e.g., unique name)
+
+#### Driver Resource
+
+4- Creating and editing drivers
+
+5- Validation rules (company assignment required, name required, etc.)
+
+#### Vehicle Resource
+
+1- Creating and editing vehicles
+
+2- Validation rules (company assignment required, name required, etc.)
+
+#### Trip Resource
+
+1- Trip creation with valid start/end times
+
+2- Prevention of overlapping trips (for drivers and vehicles)
+
+3- Editing trips without conflicts
+
+5- Validation rules (company_id, driver_id, vehicle_id, start_time, end_time required)
+
+#### Dashboard KPIs
+
+1- Active trips count
+
+2- Available drivers/vehicles
+
+3- Completed trips this month

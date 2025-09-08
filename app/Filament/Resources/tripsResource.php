@@ -12,11 +12,12 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class tripsResource extends Resource
 {
@@ -25,44 +26,53 @@ class tripsResource extends Resource
     protected static ?string $slug = 'trips';
 
     protected static string|null|BackedEnum $navigationIcon = 'heroicon-o-map';
+    protected static string|UnitEnum|null $navigationGroup = 'Admin';
+
 
     public static function form(Schema $schema): Schema
     {
         return $schema
+            ->columns(2)
             ->components([
-                Select::make('company_id')
-                    ->label('Company')
-                    ->relationship('company', 'name')
-                    ->required()
-                    ->preload()
-                    ->searchable()
-                    ->placeholder('Select a company'),
+                Section::make('Trip Details')
+                    ->schema([
+                        Select::make('company_id')
+                            ->label('Company')
+                            ->relationship('company', 'name')
+                            ->required()
+                            ->preload()
+                            ->searchable()
+                            ->placeholder('Select a company'),
 
-                   Select::make('driver_id')
-                    ->label('Driver')
-                    ->relationship('driver', 'name')
-                    ->required()
-                    ->preload()
-                    ->searchable()
-                    ->placeholder('Select a driver'),
+                        Select::make('driver_id')
+                            ->label('Driver')
+                            ->relationship('driver', 'name')
+                            ->required()
+                            ->preload()
+                            ->searchable()
+                            ->placeholder('Select a driver'),
 
-                 Select::make('vehicle_id')
-                    ->label('Vehicle')
-                    ->relationship('vehicle', 'name')
-                    ->required()
-                    ->preload()
-                    ->searchable()
-                    ->placeholder('Select a vehicle'),
+                        Select::make('vehicle_id')
+                            ->label('Vehicle')
+                            ->relationship('vehicle', 'name')
+                            ->required()
+                            ->preload()
+                            ->searchable()
+                            ->placeholder('Select a vehicle'),
+                    ])
+                    ->columnSpan(1),
 
-                DateTimePicker::make('start_time')
-                    ->label('Start Time')
-                    ->required()
-                    ->placeholder('Select start time'),
+                Section::make('Schedule')
+                    ->schema([
+                        DateTimePicker::make('start_time')
+                            ->label('Start Time')
+                            ->required(),
 
-                DateTimePicker::make('end_time')
-                    ->label('End Time')
-                    ->required()
-                    ->placeholder('Select end time'),
+                        DateTimePicker::make('end_time')
+                            ->label('End Time')
+                            ->required(),
+                    ])
+                    ->columnSpan(1),
             ]);
     }
 
@@ -104,7 +114,7 @@ class tripsResource extends Resource
             ->filters([
                 Filter::make('active')
                     ->label('Active Trips')
-                    ->query(fn ($query) => $query->where('start_time', '<=', now())->where('end_time', '>=', now())),
+                    ->query(fn($query) => $query->where('start_time', '<=', now())->where('end_time', '>=', now())),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -129,5 +139,18 @@ class tripsResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return [];
+    }
+
+
+    public static function getNavigationBadge(): ?string
+    {
+        return Trip::where('start_time', '<=', now())
+            ->where('end_time', '>=', now())
+            ->count();
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'The number of Active trips';
     }
 }

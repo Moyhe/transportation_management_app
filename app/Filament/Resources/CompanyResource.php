@@ -11,10 +11,11 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class CompanyResource extends Resource
 {
@@ -23,17 +24,21 @@ class CompanyResource extends Resource
     protected static ?string $slug = 'companies';
 
     protected static string|null|BackedEnum $navigationIcon = 'heroicon-o-building-office';
+    protected static string|UnitEnum|null $navigationGroup = 'Admin';
 
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextInput::make('name')
-                    ->label('company name')
-                    ->required()
-                    ->unique(ignoreRecord: true)
-                    ->maxLength(255),
+                Section::make('Company Details')
+                    ->schema([
+                        TextInput::make('name')
+                            ->label('Company Name')
+                            ->required()
+                            ->unique(ignoreRecord: true)
+                            ->maxLength(255),
+                    ])
 
             ]);
     }

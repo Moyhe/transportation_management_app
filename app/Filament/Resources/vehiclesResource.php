@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\vehiclesResource\Pages;
+use App\Models\Trip;
 use App\Models\Vehicle;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
@@ -11,13 +12,14 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class vehiclesResource extends Resource
 {
@@ -26,24 +28,32 @@ class vehiclesResource extends Resource
     protected static ?string $slug = 'vehicles';
 
     protected static string|null|BackedEnum $navigationIcon = 'heroicon-o-truck';
+    protected static string|UnitEnum|null $navigationGroup = 'Admin';
+
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
+                Section::make('Vehicle Details')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('Vehicle Name')
+                                    ->required()
+                                    ->maxLength(255),
 
-                TextInput::make('name')
-                    ->label('Vehicle Name')
-                    ->required()
-                    ->maxLength(255),
-
-                Select::make('company_id')
-                    ->label('Company')
-                    ->relationship('company', 'name')
-                    ->required()
-                    ->preload()
-                    ->searchable()
-                    ->placeholder('Select a company')
+                                Select::make('company_id')
+                                    ->label('Company')
+                                    ->relationship('company', 'name')
+                                    ->required()
+                                    ->preload()
+                                    ->searchable()
+                                    ->placeholder('Select a company'),
+                            ]),
+                    ])
+                    ->columnSpan(2),
             ]);
     }
 
@@ -102,5 +112,19 @@ class vehiclesResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return [];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $busyVehicleIds = Trip::where('start_time', '<=', now())
+            ->where('end_time', '>=', now())
+            ->pluck('vehicle_id');
+
+        return Vehicle::whereNotIn('id', $busyVehicleIds)->count();
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'The number of available Vehicles';
     }
 }

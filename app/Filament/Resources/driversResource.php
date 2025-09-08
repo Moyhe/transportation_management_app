@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\driversResource\Pages;
 use App\Models\Driver;
+use App\Models\Trip;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -12,11 +13,13 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use UnitEnum;
 
 class driversResource extends Resource
 {
@@ -25,24 +28,32 @@ class driversResource extends Resource
     protected static ?string $slug = 'drivers';
 
     protected static string|null|BackedEnum $navigationIcon = 'heroicon-o-user-group';
+    protected static string|null|UnitEnum $navigationGroup = 'Admin';
+
 
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
+                Section::make('Driver Details')
+                    ->schema([
+                        Grid::make(2)
+                            ->schema([
+                                TextInput::make('name')
+                                    ->label('Driver Name')
+                                    ->required()
+                                    ->maxLength(255),
 
-                TextInput::make('name')
-                    ->label('Driver Name')
-                    ->required()
-                    ->maxLength(255),
-
-                Select::make('company_id')
-                    ->label('Company')
-                    ->relationship('company', 'name')
-                    ->required()
-                    ->preload()
-                    ->searchable()
-                    ->placeholder('Select a company')
+                                Select::make('company_id')
+                                    ->label('Company')
+                                    ->relationship('company', 'name')
+                                    ->required()
+                                    ->preload()
+                                    ->searchable()
+                                    ->placeholder('Select a company'),
+                            ]),
+                    ])
+                    ->columnSpan(2)
 
             ]);
     }
@@ -103,5 +114,19 @@ class driversResource extends Resource
     public static function getGloballySearchableAttributes(): array
     {
         return [];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $busyDriverIds = Trip::where('start_time', '<=', now())
+            ->where('end_time', '>=', now())
+            ->pluck('driver_id');
+
+        return Driver::whereNotIn('id', $busyDriverIds)->count();
+    }
+
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return 'The number of available Drivers';
     }
 }
